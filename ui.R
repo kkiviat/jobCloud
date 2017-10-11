@@ -18,10 +18,12 @@ shinyUI(fluidPage(
             tags$head(tags$script(HTML(jscode))),
             actionButton("update", "Update results"),
             h3("Filtered words:"),
-            textOutput("filter_list")
+            textOutput("filter_list"),
+            h3("Words in all documents:"),
+            textOutput("all_doc_words")
         ),
         mainPanel(
-            wordcloud2Output("wordCloud"),
+            withSpinner(wordcloud2Output("wordCloud")),
             htmlOutput("jobs")
         )
     )
