@@ -16,10 +16,13 @@ shinyUI(fluidPage(
     sidebarLayout(
         sidebarPanel(
             tags$head(tags$script(HTML(jscode))),
-            textOutput("selected_word")
+            actionButton("update", "Update results"),
+            h3("Filtered words:"),
+            textOutput("filter_list")
         ),
         mainPanel(
-            withSpinner(wordcloud2Output("wordcloud"))
+            wordcloud2Output("wordCloud"),
+            htmlOutput("jobs")
         )
     )
 ))
