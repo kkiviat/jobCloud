@@ -16,10 +16,11 @@ shinyUI(fluidPage(
     sidebarLayout(
         sidebarPanel(
             tags$head(tags$script(HTML(jscode))),
-            actionButton("update", "Update results"),
+            h3("Number of postings:"),
+            textOutput("num_docs"),
             h3("Filtered words:"),
-            textOutput("filter_list"),
-            h3("Words in all documents:"),
+            textOutput("filter_words"),
+            h3("Words in all postings:"),
             textOutput("all_doc_words")
         ),
         mainPanel(

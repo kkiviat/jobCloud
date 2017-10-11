@@ -27,7 +27,7 @@ corpus <- tm_map(corpus, content_transformer(function(x) gsub('/', ' ', x)))
 ## get rid of words containing numbers
 corpus <- tm_map(corpus, content_transformer(function(x) gsub('[a-z0-9]*[0-9][a-z0-9]*', '', x)))
 ## remove stopwords
-corpus <- tm_map(corpus, removeWords, c(stopwords("english"), "youll", "youve", "weve", "can", "will", "data", "engineer"))
+corpus <- tm_map(corpus, removeWords, c(stopwords("english"), "youll", "youve", "weve", "can", "will"))
 ## build frequency matrix
 frequencies <- DocumentTermMatrix(corpus, control=list(stemming<-TRUE))
 
@@ -63,7 +63,7 @@ shinyServer(function(input, output, session) {
                                 freq=colSums(values$filtered_postings)),
                      desc(freq))
         ## remove the words that appear in all remaining documents
-        df <- filter(df, freq < nrow(values$filtered_postings))
+        ##df <- filter(df, freq < nrow(values$filtered_postings))
         print(df)
         df
     })
@@ -74,9 +74,9 @@ shinyServer(function(input, output, session) {
         w <- word()
         if (! w %in% values$filter_list) {
             values$filter_list <- c(values$filter_list, w)
-            print(values$filter_list)
+            #print(values$filter_list)
         }
-        if (word() %in% colnames(values$filtered_postings)) {
+        if (w %in% colnames(values$filtered_postings)) {
             col <- which(colnames(values$filtered_postings) == w)
             ## remove documents not containing w
             values$filtered_postings <-
@@ -90,26 +90,26 @@ shinyServer(function(input, output, session) {
                 colnames(values$filtered_postings)[
                     colSums(values$filtered_postings) == nrow(values$filtered_postings)
                 ])
+            ## remove words in all documents
+            values$filtered_postings <-
+                values$filtered_postings[,colSums(values$filtered_postings) !=
+                                          nrow(values$filtered_postings)]
         }
     }, ignoreInit=TRUE)
 
-    ## workaround for now since the ui doesn't seem to update
-    ## the reactiveValues when the wordcloud is redrawn
-    filter_list <- eventReactive(input$update > 0, {
-        values$filter_list
-    })
-    output$filter_list <- renderText(do.call(paste, as.list(filter_list())))
-    jobs <- eventReactive(input$update > 0, {
-        documents[as.integer(rownames(values$filtered_postings))]
-    })
+    jobs <- reactive({documents[as.integer(rownames(values$filtered_postings))]})
     output$jobs <- renderUI({
         HTML(do.call(paste, c(as.list(jobs()), sep='<br/><br/>')))
     })
-    all_doc_words <- eventReactive(input$update > 0, {
-        values$all_doc_words
-    })
-    output$all_doc_words <- renderText(do.call(paste, as.list(all_doc_words())))
+    
+    num_docs <- reactive({nrow(values$filtered_postings)})
+    output$num_docs <- renderText(num_docs())
 
+    all_doc_words <- reactive({as.list(values$all_doc_words)})
+    output$all_doc_words <- renderText(do.call(paste, all_doc_words()))
+
+    filter_words <- reactive({as.list(values$filter_list)})
+    output$filter_words <- renderText(do.call(paste, filter_words()))
     
     
     wordCloud <- reactive({
