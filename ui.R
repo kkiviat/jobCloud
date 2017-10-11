@@ -1,4 +1,6 @@
 library(shiny)
+library(wordcloud2)
+library(shinycssloaders)
 
 jscode <- '
 $(function() {
@@ -9,7 +11,6 @@ $(function() {
 });
 '
 
-
 shinyUI(fluidPage(
     titlePanel("Word cloud for job search results"),
     sidebarLayout(
@@ -18,7 +19,7 @@ shinyUI(fluidPage(
             textOutput("selected_word")
         ),
         mainPanel(
-            wordcloud2Output("wordCloud")
+            withSpinner(wordcloud2Output("wordcloud"))
         )
     )
 ))
